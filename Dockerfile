@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 8080
 
 # Command to run (using gunicorn)
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "config.wsgi:application"]
+CMD sh -c "python manage.py migrate && gunicorn --bind 0.0.0.0:8080 config.wsgi:application"
