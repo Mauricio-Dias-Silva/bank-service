@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JetBank Mobile</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .mobile-frame {
+            max-width: 375px;
+            height: 812px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 40px;
+            position: relative;
+            border: 10px solid #333;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #333;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 10;
+        }
+
+        .app-screen {
+            background: #f3f4f6;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            padding: 40px 20px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="text-center text-white pt-4">
+        <h1 class="text-2xl font-bold">JetBank Mobile Simulator</h1>
+        <p class="text-gray-400">Emulating iPhone 13 View</p>
+    </div>
+
+    <div class="mobile-frame">
+        <div class="notch"></div>
+
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen" class="app-screen bg-gray-900 flex flex-col justify-center px-6">
+            <div class="text-center mb-8">
+                <i class="fas fa-university text-5xl text-indigo-500 mb-4"></i>
+                <h2 class="text-3xl font-bold text-white">JetBank</h2>
+                <p class="text-gray-400">Bank as a Service</p>
+            </div>
+
+            <input type="text" id="username" placeholder="Username"
+                class="w-full p-4 mb-3 rounded-lg bg-gray-800 text-white border-none focus:ring-2 focus:ring-indigo-500">
+            <input type="password" id="password" placeholder="Password"
+                class="w-full p-4 mb-6 rounded-lg bg-gray-800 text-white border-none focus:ring-2 focus:ring-indigo-500">
+
+            <button onclick="login()"
+                class="w-full py-4 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">
+                ENTRAR
+            </button>
+            <p id="loginError" class="text-red-500 text-center mt-4 text-sm hidden"></p>
+        </div>
+
+        <!-- HOME SCREEN -->
+        <div id="homeScreen" class="app-screen hidden">
+            <!-- Header -->
+            <div class="gradient-header shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-white bg-opacity-20 p-2 rounded-full">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="font-bold" id="userDisplay">User</span>
+                    </div>
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                    <p class="text-sm opacity-80">Saldo Disponível</p>
+                    <h1 class="text-3xl font-bold">R$ <span id="balanceDisplay">--,--</span></h1>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-4 gap-2 px-4 -mt-6">
+                <button onclick="showTransfer()" class="flex flex-col items-center p-2 bg-white rounded-xl shadow-sm">
+                    <div
+                        class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-600">Pix</span>
+                </button>
+                <button class="flex flex-col items-center p-2 bg-white rounded-xl shadow-sm">
+                    <div
+                        class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-600">Pagar</span>
+                </button>
+                <button class="flex flex-col items-center p-2 bg-white rounded-xl shadow-sm">
+                    <div
+                        class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-600">Cartão</span>
+                </button>
+                <button class="flex flex-col items-center p-2 bg-white rounded-xl shadow-sm">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-1">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-600">Mais</span>
+                </button>
+            </div>
+
+            <!-- Credit Builder Card -->
+            <div class="px-4 mt-6">
+                <div
+                    class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-xs opacity-80 uppercase tracking-wider">Limite de Crédito</p>
+                                <h2 class="text-2xl font-bold">R$ <span id="limitDisplay">0,00</span></h2>
+                            </div>
+                            <i class="fab fa-cc-mastercard text-3xl opacity-80"></i>
+                        </div>
+
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-xs opacity-70 mb-1">Garantia Travada</p>
+                                <p class="font-mono text-sm">R$ <span id="collateralDisplay">0,00</span></p>
+                            </div>
+                            <button onclick="openCreditModal()"
+                                class="bg-white text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-gray-50 transition">
+                                Aumentar Limite
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Decorative Circles -->
+                    <div class="absolute -top-6 -right-6 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                    <div class="absolute -bottom-6 -left-6 w-20 h-20 bg-black opacity-10 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Transactions -->
+            <div class="px-4 mt-6">
+                <h3 class="font-bold text-gray-700 mb-3">Últimas Transações</h3>
+                <div id="transactionList" class="space-y-3 pb-20">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Tab Bar -->
+            <div
+                class="absolute bottom-0 w-full bg-white border-t px-6 py-4 flex justify-between items-center text-gray-400">
+                <i class="fas fa-home text-indigo-600 text-xl"></i>
+                <i class="fas fa-wallet text-xl"></i>
+                <div
+                    class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white -mt-8 shadow-lg border-4 border-gray-100">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <i class="fas fa-chart-line text-xl"></i>
+                <i class="fas fa-cog text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREDIT MODAL -->
+    <div id="creditModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-end">
+        <div class="bg-white w-full rounded-t-3xl p-6 mobile-frame-width mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-gray-800 text-lg">Aumentar Limite</h3>
+                <button onclick="closeCreditModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-4">
+                Invista seu saldo para liberar limite no cartão de crédito instantaneamente.
+                <span class="text-green-600 font-bold">O dinheiro continua sendo seu.</span>
+            </p>
+
+            <div class="bg-gray-100 p-4 rounded-xl mb-4">
+                <p class="text-xs text-gray-500 mb-1">Saldo Disponível</p>
+                <p class="font-bold text-gray-800">R$ <span id="modalBalance">--,--</span></p>
+            </div>
+
+            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">Quanto quer investir?</label>
+            <div class="relative mb-6">
+                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold">R$</span>
+                <input type="number" id="investAmount"
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-800 text-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    placeholder="0.00">
+            </div>
+
+            <button onclick="investCollateral()"
+                class="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition transform active:scale-95">
+                VIRAR CRÉDITO 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- TRANSFER MODAL -->
+    <div id="transferModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-end">
+        <div class="bg-white w-full rounded-t-3xl p-6 mobile-frame-width mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-gray-800 text-lg">Área Pix</h3>
+                <button onclick="closeTransferModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <button class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <span class="text-xs text-gray-500">Ler QR</span>
+                </button>
+                <button class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-copy"></i>
+                    </div>
+                    <span class="text-xs text-gray-500">Copia Cola</span>
+                </button>
+                <button class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <span class="text-xs text-gray-500">Chaves</span>
+                </button>
+            </div>
+
+            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">Chave ou Conta</label>
+            <input type="text" id="pixTarget" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4"
+                placeholder="CPF, Email ou Conta">
+
+            <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">Valor</label>
+            <div class="relative mb-6">
+                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold">R$</span>
+                <input type="number" id="pixAmount"
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-800 text-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    placeholder="0.00">
+            </div>
+
+            <button onclick="sendPix()"
+                class="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition transform active:scale-95">
+                ENVIAR PIX 💸
+            </button>
+        </div>
+    </div>
+
+    <!-- APP LOGIC -->
+    <script>
+        const API_URL = '/fintech/api';
+        let TOKEN = localStorage.getItem('access_token');
+
+        // Logic to check auth on load
+        if (TOKEN) {
+            loadDashboard();
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            try {
+                const res = await fetch(`${API_URL}/token/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!res.ok) throw new Error('Credenciais inválidas');
+
+                const data = await res.json();
+                TOKEN = data.access;
+                localStorage.setItem('access_token', TOKEN);
+
+                loadDashboard();
+            } catch (e) {
+                errorEl.textContent = e.message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        async function loadDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('homeScreen').classList.remove('hidden');
+
+            try {
+                // 1. Get Account Info (and auto-create if needed via idempotent endpoint)
+                const accRes = await fetch(`${API_URL}/accounts/create_account/`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${TOKEN}` }
+                });
+                const account = await accRes.json();
+
+                document.getElementById('balanceDisplay').textContent = account.balance;
+                document.getElementById('modalBalance').textContent = account.balance;
+                document.getElementById('limitDisplay').textContent = account.credit_limit || '0.00';
+                document.getElementById('collateralDisplay').textContent = account.invested_collateral || '0.00';
+
+                // 2. Get Transactions
+                const txRes = await fetch(`${API_URL}/transactions/`, {
+                    headers: { 'Authorization': `Bearer ${TOKEN}` }
+                });
+                const transactions = await txRes.json();
+
+                const listEl = document.getElementById('transactionList');
+                listEl.innerHTML = transactions.map(tx => `
+                    <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 ${tx.amount < 0 ? 'bg-red-100 text-red-500' : 'bg-green-100 text-green-500'} rounded-full flex items-center justify-center">
+                                <i class="fas ${tx.amount < 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm">${tx.description || 'Transferência'}</p>
+                                <p class="text-xs text-gray-400">${new Date(tx.timestamp).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <span class="font-bold ${tx.amount < 0 ? 'text-gray-800' : 'text-green-600'}">
+                            R$ ${tx.amount}
+                        </span>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                console.error(e);
+                alert('Erro: ' + e.message);
+            }
+        }
+
+        function openCreditModal() {
+            document.getElementById('creditModal').classList.remove('hidden');
+        }
+
+        function closeCreditModal() {
+            document.getElementById('creditModal').classList.add('hidden');
+        }
+
+        async function investCollateral() {
+            const amount = document.getElementById('investAmount').value;
+            if (!amount) return alert('Digite um valor!');
+
+            try {
+                const res = await fetch(`${API_URL}/accounts/invest_limit/`, { // Fixed endpoint URL
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: amount })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Erro ao investir');
+                }
+
+                alert('Sucesso! Seu limite aumentou.');
+                closeCreditModal();
+                loadDashboard(); // Refresh UI
+            } catch (e) {
+                alert('Erro: ' + e.message);
+            }
+        }
+        }
+
+        async function sendPix() {
+            const receiver = document.getElementById('pixTarget').value;
+            const amount = document.getElementById('pixAmount').value;
+
+            if (!receiver || !amount) return alert('Preencha os dados!');
+
+            try {
+                // Using existing 'transfer' endpoint which handles internal transfers
+                // In a real scenario, this would check if it's internal or external (Stark Bank)
+                const res = await fetch(`${API_URL}/transactions/transfer/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        receiver_account: receiver,
+                        amount: amount
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Erro no Pix');
+                }
+
+                alert('Pix Enviado com Sucesso!');
+                closeTransferModal();
+                loadDashboard();
+            } catch (e) {
+                alert('Erro: ' + e.message);
+            }
+        }
+
+        function showTransfer() {
+            document.getElementById('transferModal').classList.remove('hidden');
+        }
+
+        function closeTransferModal() {
+            document.getElementById('transferModal').classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>

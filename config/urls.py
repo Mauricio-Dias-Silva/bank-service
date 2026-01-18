@@ -3,5 +3,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/bank/', include('fintech.urls')),
+    path('fintech/', include('fintech.urls')),
+    path('', lambda r: __import__('django.shortcuts').shortcuts.redirect('fintech/app/')), # Auto-redirect root
 ]

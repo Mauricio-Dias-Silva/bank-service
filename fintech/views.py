@@ -38,7 +38,7 @@ def transfer_view(request):
         try:
             BankingService.process_transfer(request.user, receiver_account, amount, description)
             messages.success(request, "Transferência realizada com sucesso!")
-            return redirect('dashboard:fintech:bank_dashboard')
+            return redirect('fintech:bank_dashboard')
         except Exception as e:
             messages.error(request, f"Erro na transferência: {str(e)}")
             
@@ -51,7 +51,7 @@ def iot_dashboard(request):
     """
     user_account = getattr(request.user, 'bank_account', None)
     if not user_account:
-        return redirect('dashboard:fintech:bank_dashboard')
+        return redirect('fintech:bank_dashboard')
         
     devices = IoTDevice.objects.filter(owner_account=user_account)
     
@@ -81,8 +81,8 @@ def register_device(request):
             is_active=True
         )
         messages.success(request, f"Dispositivo {name} conectado ao banco!")
-        return redirect('dashboard:fintech:iot_dashboard')
-    return redirect('dashboard:fintech:iot_dashboard')
+        return redirect('fintech:iot_dashboard')
+    return redirect('fintech:iot_dashboard')
 
 @login_required
 def simulate_iot_payment(request, device_id):
@@ -104,4 +104,104 @@ def simulate_iot_payment(request, device_id):
         except Exception as e:
             messages.error(request, f"Erro IoT: {str(e)}")
             
-    return redirect('dashboard:fintech:iot_dashboard')
+# --- Mobile Simulator ---
+def mobile_app(request):
+    """
+    Renders the Mobile App Simulator (PWA).
+    """
+    return render(request, 'dashboard/fintech/mobile_app.html')
+from rest_framework import viewsets, permissions, status, mixins
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .serializers import AccountSerializer, TransactionSerializer, TransferSerializer, PixKeySerializer
+from .models import Account, Transaction, PixKey 
+
+class AccountViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint that allows users to view their own account.
+    """
+    serializer_class = AccountSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return the user's own account
+        return Account.objects.filter(user=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def create_account(self, request):
+        """
+        Idempotent endpoint to create/retrieve user account.
+        """
+        try:
+            account = BankingService.create_account(request.user)
+            serializer = self.get_serializer(account)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def invest_limit(self, request):
+        """
+        Endpoint to convert Balance -> Credit Limit.
+        """
+        amount = request.data.get('amount')
+        if not amount:
+             return Response({"error": "Valor obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            BankingService.invest_collateral(request.user, amount)
+            # Return updated account
+            account = request.user.bank_account
+            serializer = self.get_serializer(account)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class TransactionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    API endpoint for Transactions.
+    """
+    serializer_class = TransactionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # User sees sent AND received transactions
+        user = self.request.user
+        if not hasattr(user, 'bank_account'):
+            return Transaction.objects.none()
+        account = user.bank_account
+        return Transaction.objects.filter(
+            Q(sender=account) | Q(receiver=account)
+        ).order_by('-timestamp')
+
+    @action(detail=False, methods=['post'])
+    def transfer(self, request):
+        """
+        Execute a transfer.
+        """
+        serializer = TransferSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                BankingService.process_transfer(
+                    sender_user=request.user,
+                    receiver_account_number=serializer.validated_data['receiver_account'],
+                    amount=serializer.validated_data['amount'],
+                    description=serializer.validated_data.get('description', '')
+                )
+                return Response({"status": "success", "message": "Transferência realizada."}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PixKeyViewSet(viewsets.ModelViewSet):
+    """
+    API to manage Pix Keys (CRUD).
+    """
+    serializer_class = PixKeySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not hasattr(user, 'bank_account'):
+            return PixKey.objects.none()
+        return PixKey.objects.filter(account=user.bank_account)

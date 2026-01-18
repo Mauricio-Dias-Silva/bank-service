@@ -9,4 +9,5 @@ def create_user_bank_account(sender, instance, created, **kwargs):
     Cria automaticamente uma conta bancária para cada novo usuário.
     """
     if created:
-        Account.objects.create(user=instance)
+        pass
+        # Account.objects.create(user=instance) # DISABLED: Let BankingService handle this to ensure Welcome Bonus & Provider ID

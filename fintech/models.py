@@ -32,6 +32,11 @@ class Account(models.Model):
     )
     
     balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, verbose_name="Saldo")
+    
+    # Credit Builder Fields
+    invested_collateral = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, verbose_name="Garantia Travada")
+    credit_limit = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, verbose_name="Limite de Crédito")
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado Em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado Em")
 

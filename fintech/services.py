@@ -23,9 +23,15 @@ class BankingService:
         account_number = str(uuid.uuid4().int)[:7] 
         
         # --- BaaS Integration ---
-        # Initialize Provider (TODO: Load from settings based on ENV)
-        from .providers.mock import MockBankingProvider
-        provider = MockBankingProvider()
+        import os
+        provider_name = os.getenv("BANKING_PROVIDER", "MOCK")
+        
+        if provider_name == "STARKBANK":
+            from .providers.starkbank import StarkBankProvider
+            provider = StarkBankProvider()
+        else:
+            from .providers.mock import MockBankingProvider
+            provider = MockBankingProvider()
         
         # Create account at the external provider
         # Assuming we use the user's username or email as tax_id for now (mock)
@@ -91,6 +97,36 @@ class BankingService:
             )
 
         return True
+
+    @staticmethod
+    def invest_collateral(user, amount):
+        """
+        Locks user balance to increase credit limit.
+        """
+        amount = Decimal(amount)
+        if amount <= 0:
+            raise ValidationError("O valor deve ser positivo.")
+
+        account = getattr(user, 'bank_account', None)
+        if not account:
+            raise ValidationError("Usuário sem conta.")
+
+        if account.balance < amount:
+            raise ValidationError("Saldo insuficiente para investir.")
+
+        with transaction.atomic():
+            # 1. Deduct from Balance
+            account.balance -= amount
+            
+            # 2. Add to Collateral
+            account.invested_collateral += amount
+            
+            # 3. Increase Credit Limit (1:1 Ratio)
+            account.credit_limit += amount
+            
+            account.save()
+            
+        return account
 
 class LedgerService:
     @staticmethod
