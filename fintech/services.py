@@ -21,14 +21,24 @@ class BankingService:
         # Format: 7 digits + 1 check digit (e.g., 1234567-8)
         # Using UUID integer for randomness
         account_number = str(uuid.uuid4().int)[:7] 
-        # Ensure Uniqueness loop could be here
+        
+        # --- BaaS Integration ---
+        # Initialize Provider (TODO: Load from settings based on ENV)
+        from .providers.mock import MockBankingProvider
+        provider = MockBankingProvider()
+        
+        # Create account at the external provider
+        # Assuming we use the user's username or email as tax_id for now (mock)
+        provider_data = provider.create_account(
+            name=user.username,  # Ideally Full Name
+            tax_id="000.000.000-00" # Placeholder for CPF
+        )
         
         account = Account.objects.create(
             user=user,
             account_number=account_number,
-            # agency removed
+            provider_account_id=provider_data.get('provider_account_id'),
             balance=Decimal('1000.00'), # Welcome Bonus!
-            # account_type removed
         )
         return account
 
@@ -136,6 +146,12 @@ class IoTWalletService:
         if sender_account.balance < amount:
             raise ValidationError(f"Saldo insuficiente na conta do dispositivo (Saldo: {sender_account.balance})")
 
+        # --- Rule Engine Check ---
+        from .rules import RuleEngine
+        allowed, reason = RuleEngine.check_spending_limit(device, amount)
+        if not allowed:
+             raise ValidationError(f"Pagamento bloqueado pelo Motor de Regras: {reason}")
+             
         with transaction.atomic():
             sender_account.balance -= amount
             receiver_account.balance += amount

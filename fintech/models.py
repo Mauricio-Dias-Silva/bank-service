@@ -15,6 +15,14 @@ def generate_account_number():
 class Account(models.Model):
     account_number = models.CharField(max_length=20, unique=True, default=generate_account_number)
     
+    # BaaS Integration
+    provider_account_id = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        verbose_name="ID no Provedor Bancário"
+    )
+    
     # [PYTHONJET FUSION] Link direto ao User
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
@@ -37,6 +45,9 @@ class IoTDevice(models.Model):
     """
     device_id = models.CharField(max_length=100, unique=True, verbose_name="ID do Dispositivo")
     name = models.CharField(max_length=255, verbose_name="Nome do Dispositivo")
+    
+    # Security
+    secret_token = models.CharField(max_length=255, verbose_name="Token Secreto (API Key)", default=uuid.uuid4)
     
     owner_account = models.ForeignKey(
         Account,
@@ -192,3 +203,13 @@ class Transaction(models.Model):
             self.save()
             return True
         return False
+
+# --- MODELO: IdempotencyLog ---
+class IdempotencyLog(models.Model):
+    key = models.CharField(max_length=100, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    response_json = models.JSONField(default=dict)
+    response_status = models.IntegerField()
+
+    def __str__(self):
+        return f"Idempotency Key: {self.key}"
