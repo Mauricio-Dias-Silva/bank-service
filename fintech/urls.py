@@ -22,6 +22,7 @@ urlpatterns = [
     # API Routes (Mobile)
     path('api/', include(router.urls)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/register/', views.register_user, name='register_user'),
     path('app/', views.mobile_app, name='mobile_app_simulator'),
     
     # Swagger Docs

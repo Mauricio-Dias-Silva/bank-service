@@ -111,8 +111,10 @@ def mobile_app(request):
     """
     return render(request, 'dashboard/fintech/mobile_app.html')
 from rest_framework import viewsets, permissions, status, mixins
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.contrib.auth.models import User
 from .serializers import AccountSerializer, TransactionSerializer, TransferSerializer, PixKeySerializer
 from .models import Account, Transaction, PixKey 
 
@@ -205,3 +207,32 @@ class PixKeyViewSet(viewsets.ModelViewSet):
         if not hasattr(user, 'bank_account'):
             return PixKey.objects.none()
         return PixKey.objects.filter(account=user.bank_account)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    """
+    Public endpoint to create a new user and bank account.
+    """
+    username = request.data.get('username')
+    password = request.data.get('password')
+    email = request.data.get('email', '')
+    
+    if not username or not password:
+        return Response({'error': 'Username and password required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        with transaction.atomic():
+            user = User.objects.create_user(username=username, email=email, password=password)
+            # Auto-create account
+            BankingService.create_account(user)
+            
+        return Response({
+            'message': 'User created successfully', 
+            'username': user.username
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
